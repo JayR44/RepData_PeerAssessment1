@@ -5,21 +5,192 @@ output:
     keep_md: true
 ---
 
+Load required packages
+```{r}
+library(knitr)
+library(tidyverse)
+library(lattice)
+```
+
+
+Set default to be echo = TRUE
+```{r}
+opts_chunk$set(echo = TRUE)
+```
+
+Set format of numbers
+```{r}
+options(digits = 2, scipen = 10)
+```
 
 ## Loading and preprocessing the data
 
+Unzip the folder containing the data
+```{r}
+unzip("activity.zip")
+```
 
+Read in the data
+```{r}
+activity_data <- read_csv("activity.csv")
+```
+
+View the first few rows of the data
+```{r}
+head(activity_data)
+```
 
 ## What is mean total number of steps taken per day?
 
+Group the data by day. Find the total steps taken on each day (excluding missing values)
+```{r}
+steps_per_day <- activity_data %>%
+  na.omit() %>%
+  group_by(date) %>%
+  summarise(total_steps = sum(steps))
+steps_per_day
+```
 
+Construct a histogram of the total number of steps taken each day
+```{r histogram}
+hist(steps_per_day$total_steps,
+     col = "green",
+     main = "Total Number of Steps Taken per Day",
+     xlab = "Number of steps",
+     ylab = "Frequency")
+```
+
+Calculate the mean and median number of steps taken in a day
+```{r}
+mean_steps <- mean(steps_per_day$total_steps)
+median_steps <- median(steps_per_day$total_steps)
+```
+
+The mean number of steps taken per day is `r mean_steps` steps.  
+The median number of steps taken per day is `r median_steps` steps.
 
 ## What is the average daily activity pattern?
 
+Find the average number of steps taken at each interval (exluding missing values)
+```{r}
+intervals <- activity_data %>%
+  na.omit() %>%
+  group_by(interval) %>%
+  summarise(avg_steps = mean(steps))
+intervals
+```
 
+Construct a time series plot of the 5-minute intervals and average number of steps taken
+```{r timeplot}
+plot(x = intervals$interval, y = intervals$avg_steps,
+     type = "l",
+     col = "blue",
+     main = "Average Number of Steps Taken during each Interval",
+     xlab = "Interval",
+     ylab = "Number of steps")
+```
+
+Find the interval which contains the maximum number of steps on average
+```{r}
+max_steps <- intervals %>% filter(avg_steps == max(avg_steps))
+max_steps
+```
+
+The interval which contains the maximum number of steps is `r max_steps[1]`
 
 ## Imputing missing values
 
+Calculate the number of missing values
+```{r}
+total_na <- sum(is.na(activity_data$steps))
+total_na
+```
 
+There are `r total_na` missing values in the dataset.
+
+#Replace the NA's with the average number of steps for each time interval
+
+Add a column with the average number of steps for each interval
+```{r}
+add_avg_steps <- activity_data %>% left_join(intervals, by = "interval")
+add_avg_steps
+```
+
+Create a column `new_steps` that replaces missing values with the average number of steps for that interval
+```{r}
+replace_nas <- add_avg_steps %>%
+  mutate(new_steps = if_else(is.na(steps), avg_steps, steps))
+```
+
+Select only columns that are needed
+```{r}
+activity_data_upd <- replace_nas %>%
+  select(new_steps, date, interval) %>%
+  rename(steps = new_steps)
+activity_data_upd
+```
+
+Group the data by day. Find the total steps taken on each day
+```{r}
+steps_per_day_upd <- activity_data_upd %>%
+  group_by(date) %>%
+  summarise(total_steps = sum(steps))
+steps_per_day_upd
+```
+
+Construct a histogram with the updated data
+```{r histogram_upd}
+hist(steps_per_day_upd$total_steps,
+     col = "green",
+     main = "Total Number of Steps Taken per Day",
+     xlab = "Number of steps",
+     ylab = "Frequency")
+```
+
+Calculate the mean and median number of steps taken in a day
+```{r}
+mean_steps_upd <- mean(steps_per_day_upd$total_steps)
+median_steps_upd <- median(steps_per_day_upd$total_steps)
+```
+
+The mean number of steps taken per day is `r mean_steps_upd` steps.  
+The median number of steps taken per day is `r median_steps_upd` steps.  
+
+The mean and the median are now equal.  
+The mean has increased slightly, but the median is unchanged.
 
 ## Are there differences in activity patterns between weekdays and weekends?
+
+Add a column that indicates whether a day is a weekday or a weekend
+```{r}
+activity_weekday <- activity_data_upd %>%
+  mutate(Day = weekdays(as.Date(date))) %>%
+  mutate(Day_type = if_else(Day %in% c("Saturday", "Sunday"), "weekend", "weekday")) %>%
+  select(-Day)
+activity_weekday
+```
+
+Convert `Day_type` into a factor
+```{r}
+activity_weekday$Day_type <- as.factor(activity_weekday$Day_type)
+activity_weekday
+```
+
+Find the average number of steps taken at each interval
+```{r}
+intervals_weekday <- activity_weekday %>%
+  group_by(interval, Day_type) %>%
+  summarise(avg_steps = mean(steps))
+intervals_weekday
+```
+
+Construct a panel plot containing a time series plot of the 5-minute interval and the average number of steps taken, averaged across all weekday days or weekend days
+```{r panelplot}
+xyplot(avg_steps ~ interval | Day_type, data = intervals_weekday, layout = c(1,2),
+     type = "l",
+     col = "blue",
+     main = "Average Number of Steps Taken during each Interval",
+     xlab = "Interval",
+     ylab = "Number of steps")
+```
+
