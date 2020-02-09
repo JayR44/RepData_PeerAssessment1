@@ -211,7 +211,7 @@ total_na
 
 There are 2304 missing values in the dataset.
 
-#Replace the NA's with the average number of steps for each time interval
+### Replace the NA's with the average number of steps for each time interval
 
 Add a column with the average number of steps for each interval
 
@@ -350,7 +350,7 @@ activity_weekday
 ## # ... with 17,558 more rows
 ```
 
-Convert `Day-type` into a factor
+Convert `Day_type` into a factor
 
 ```r
 activity_weekday$Day_type <- as.factor(activity_weekday$Day_type)

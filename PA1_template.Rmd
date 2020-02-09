@@ -108,7 +108,7 @@ total_na
 
 There are `r total_na` missing values in the dataset.
 
-#Replace the NA's with the average number of steps for each time interval
+### Replace the NA's with the average number of steps for each time interval
 
 Add a column with the average number of steps for each interval
 ```{r}

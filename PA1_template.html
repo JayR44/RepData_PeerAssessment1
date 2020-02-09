@@ -487,7 +487,8 @@ max_steps</code></pre>
 total_na</code></pre>
 <pre><code>## [1] 2304</code></pre>
 <p>There are 2304 missing values in the dataset.</p>
-<p>#Replace the NA’s with the average number of steps for each time interval</p>
+<div id="replace-the-nas-with-the-average-number-of-steps-for-each-time-interval" class="section level3">
+<h3>Replace the NA’s with the average number of steps for each time interval</h3>
 <p>Add a column with the average number of steps for each interval</p>
 <pre class="r"><code>add_avg_steps &lt;- activity_data %&gt;% left_join(intervals, by = &quot;interval&quot;)
 add_avg_steps</code></pre>
@@ -561,6 +562,7 @@ The median number of steps taken per day is 10766.19 steps.</p>
 <p>The mean and the median are now equal.<br />
 The mean has increased slightly, but the median is unchanged.</p>
 </div>
+</div>
 <div id="are-there-differences-in-activity-patterns-between-weekdays-and-weekends" class="section level2">
 <h2>Are there differences in activity patterns between weekdays and weekends?</h2>
 <p>Add a column that indicates whether a day is a weekday or a weekend</p>
@@ -583,7 +585,7 @@ activity_weekday</code></pre>
 ##  9 0      2012-10-01       40 weekday 
 ## 10 1.47   2012-10-01       45 weekday 
 ## # ... with 17,558 more rows</code></pre>
-<p>Convert <code>Day-type</code> into a factor</p>
+<p>Convert <code>Day_type</code> into a factor</p>
 <pre class="r"><code>activity_weekday$Day_type &lt;- as.factor(activity_weekday$Day_type)
 activity_weekday</code></pre>
 <pre><code>## # A tibble: 17,568 x 4
